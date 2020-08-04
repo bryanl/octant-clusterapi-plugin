@@ -1,4 +1,4 @@
-// core-js and regenerator-runtime are requried to ensure the correct polyfills
+// core-js and regenerator-runtime are required to ensure the correct polyfills
 // are applied by babel/webpack.
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
@@ -16,6 +16,7 @@ import * as c from './octant/components';
 // the Octant JavaScript runtime.
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ObjectPrinter } from './objects/objects';
+import { defaultRouter, Router } from './pages/router';
 
 const versions: GroupVersionKind[] = [
   {
@@ -52,6 +53,8 @@ export default class MyPlugin implements octant.Plugin {
   actionCount: number;
   currentNamespace: Subject<string>;
 
+  private router: Router;
+
   // Octant expects plugin constructors to accept two arguments, the dashboardClient and the httpClient
   constructor(
     dashboardClient: octant.DashboardClient,
@@ -63,6 +66,8 @@ export default class MyPlugin implements octant.Plugin {
     // set initial actionCount
     this.actionCount = 0;
     this.currentNamespace = new BehaviorSubject('default');
+
+    this.router = defaultRouter();
   }
 
   printHandler(request: octant.ObjectRequest): octant.PrintResponse {
@@ -130,84 +135,86 @@ export default class MyPlugin implements octant.Plugin {
 
   navigationHandler(): octant.Navigation {
     let nav = new c.Navigation(
-      'TS Plugin',
+      'Cluster API',
       'octant-clusterapi-plugin',
-      'cloud'
+      'cluster'
     );
-    nav.add('test menu flyout', 'nested-path', 'folder');
+
     return nav;
   }
 
   contentHandler(request: octant.ContentRequest): octant.ContentResponse {
-    let contentPath = request.contentPath;
-    let title = [c.createText('octant-clusterapi-plugin')];
-    if (contentPath.length > 0) {
-      title.push(c.createText(contentPath));
-    }
+    return this.router.route(request.contentPath);
 
-    let namespace = '<unknown>';
-    this.currentNamespace.subscribe(data => {
-      namespace = data;
-    });
-
-    return {
-      content: {
-        title: title,
-        viewComponents: [
-          {
-            metadata: {
-              type: 'card',
-              accessor: 'card-1',
-              title: [c.createText('Card 1')],
-            },
-            config: {
-              body: c.createText(
-                'card body 1\n' +
-                  contentPath +
-                  '\n' +
-                  ' **actionCallCount:** ' +
-                  this.actionCount +
-                  '\n' +
-                  'currentNamespace: ' +
-                  namespace +
-                  '\n',
-                true
-              ),
-            },
-          } as octant.CardView,
-          {
-            metadata: {
-              type: 'card',
-              accessor: 'card-2',
-              title: [c.createText('Card 2')],
-            },
-            config: {
-              body: c.createText('card body 2' + contentPath),
-            },
-          } as octant.CardView,
-        ],
-        buttonGroup: {
-          config: {
-            buttons: [
-              {
-                name: 'Test',
-                payload: {
-                  action: 'octant-clusterapi-plugin/testAction',
-                  foo: 'bar',
-                },
-                confirmation: {
-                  title: 'Confirmation?',
-                  body: 'Confirm this button click',
-                },
-              },
-            ],
-          },
-          metadata: {
-            type: 'buttonGroup',
-          },
-        } as octant.ButtonGroupView,
-      },
-    };
+    // let contentPath = request.contentPath;
+    // let title = [c.createText('octant-clusterapi-plugin')];
+    // if (contentPath.length > 0) {
+    //   title.push(c.createText(contentPath));
+    // }
+    //
+    // let namespace = '<unknown>';
+    // this.currentNamespace.subscribe(data => {
+    //   namespace = data;
+    // });
+    //
+    // return {
+    //   content: {
+    //     title: title,
+    //     viewComponents: [
+    //       {
+    //         metadata: {
+    //           type: 'card',
+    //           accessor: 'card-1',
+    //           title: [c.createText('Card 1')],
+    //         },
+    //         config: {
+    //           body: c.createText(
+    //             'card body 1\n' +
+    //               contentPath +
+    //               '\n' +
+    //               ' **actionCallCount:** ' +
+    //               this.actionCount +
+    //               '\n' +
+    //               'currentNamespace: ' +
+    //               namespace +
+    //               '\n',
+    //             true
+    //           ),
+    //         },
+    //       } as octant.CardView,
+    //       {
+    //         metadata: {
+    //           type: 'card',
+    //           accessor: 'card-2',
+    //           title: [c.createText('Card 2')],
+    //         },
+    //         config: {
+    //           body: c.createText('card body 2' + contentPath),
+    //         },
+    //       } as octant.CardView,
+    //     ],
+    //     buttonGroup: {
+    //       config: {
+    //         buttons: [
+    //           {
+    //             name: 'Test',
+    //             payload: {
+    //               action: 'octant-clusterapi-plugin/testAction',
+    //               foo: 'bar',
+    //             },
+    //             confirmation: {
+    //               title: 'Confirmation?',
+    //               body: 'Confirm this button click',
+    //             },
+    //           },
+    //         ],
+    //       },
+    //       metadata: {
+    //         type: 'buttonGroup',
+    //       },
+    //     } as octant.ButtonGroupView,
+    //   },
+    // };
   }
 }
 
