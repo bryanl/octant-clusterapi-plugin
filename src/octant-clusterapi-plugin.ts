@@ -17,6 +17,7 @@ import * as c from './octant/components';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { ObjectPrinter } from './objects/objects';
 import { defaultRouter, Router } from './pages/router';
+import { last, take } from 'rxjs/operators';
 
 const versions: GroupVersionKind[] = [
   {
@@ -51,7 +52,7 @@ export default class MyPlugin implements octant.Plugin {
 
   // Custom plugin properties
   actionCount: number;
-  currentNamespace: Subject<string>;
+  currentNamespace: BehaviorSubject<string>;
 
   private router: Router;
 
@@ -144,7 +145,8 @@ export default class MyPlugin implements octant.Plugin {
   }
 
   contentHandler(request: octant.ContentRequest): octant.ContentResponse {
-    return this.router.route(request.contentPath);
+    let namespace = this.currentNamespace.getValue();
+    return this.router.route(request, namespace);
 
     // let contentPath = request.contentPath;
     // let title = [c.createText('octant-clusterapi-plugin')];

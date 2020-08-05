@@ -9,14 +9,14 @@ export class Router {
     this.pages = pages;
   }
 
-  route(req: string): octant.ContentResponse {
-    const contentPath = req.length === 0 ? '/' : req;
+  route(req: octant.ContentRequest, namespace: string): octant.ContentResponse {
+    const contentPath = req.contentPath.length === 0 ? '/' : req.contentPath;
     const page = this.pages.find(p => p.paths.includes(contentPath));
     if (!page) {
-      return new NotFoundPage(contentPath).content();
+      return new NotFoundPage(contentPath).content(req, namespace);
     }
 
-    return page.content();
+    return page.content(req, namespace);
   }
 }
 
