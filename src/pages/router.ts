@@ -1,6 +1,7 @@
 import * as octant from '../octant/plugin';
 import { OverviewPage } from './overview-page';
 import { ContentPage, NotFoundPage } from './page';
+import { DashboardClient } from '../octant/plugin';
 
 export class Router {
   pages: ContentPage[];
@@ -20,6 +21,6 @@ export class Router {
   }
 }
 
-export const defaultRouter = (): Router => {
-  return new Router(new OverviewPage());
+export const defaultRouter = (dashboardClient: DashboardClient): Router => {
+  return new Router(new OverviewPage(dashboardClient));
 };

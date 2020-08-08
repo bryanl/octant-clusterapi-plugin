@@ -31,6 +31,7 @@ export class ObjectPrinter {
   }
 
   private findPrinter() {
+    console.log('finding a printer');
     const objectRequest = JSON.parse(JSON.stringify(this.req)) as ObjectRequest;
     const object = objectRequest.object;
 
@@ -41,6 +42,7 @@ export class ObjectPrinter {
       return new Cluster(this.req);
     }
 
+    console.log('unable to find a printer');
     return new EmptyPrinter();
   }
 }

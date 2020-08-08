@@ -14,10 +14,9 @@ import * as c from './octant/components';
 
 // rxjs is used to show that Observables function within
 // the Octant JavaScript runtime.
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { ObjectPrinter } from './objects/objects';
 import { defaultRouter, Router } from './pages/router';
-import { last, take } from 'rxjs/operators';
 
 const versions: GroupVersionKind[] = [
   {
@@ -43,10 +42,6 @@ export default class MyPlugin implements octant.Plugin {
   get capabilities(): Capabilities {
     return {
       supportPrinterConfig: versions,
-      actionNames: [
-        'octant-clusterapi-plugin/testAction',
-        'action.octant.dev/setNamespace',
-      ],
     };
   }
 
@@ -68,10 +63,11 @@ export default class MyPlugin implements octant.Plugin {
     this.actionCount = 0;
     this.currentNamespace = new BehaviorSubject('default');
 
-    this.router = defaultRouter();
+    this.router = defaultRouter(dashboardClient);
   }
 
   printHandler(request: octant.ObjectRequest): octant.PrintResponse {
+    console.log('in printer handler');
     const printer = new ObjectPrinter(request);
     const resp = printer.print();
     return resp.toObject();
@@ -91,49 +87,6 @@ export default class MyPlugin implements octant.Plugin {
     return;
   }
 
-  tabHandler(request: octant.ObjectRequest): octant.TabResponse {
-    return {
-      tab: {
-        name: 'octant-clusterapi-plugin',
-        contents: {
-          config: {
-            sections: [
-              [
-                {
-                  width: c.Width.Half,
-                  height: c.Width.Half,
-                  view: {
-                    metadata: {
-                      type: 'card',
-                    },
-                    config: {
-                      body: c.createText('card body'),
-                    },
-                  } as octant.CardView,
-                },
-                {
-                  width: c.Width.Half,
-                  height: c.Width.Half,
-                  view: {
-                    metadata: {
-                      type: 'card',
-                    },
-                    config: {
-                      body: c.createText('card body'),
-                    },
-                  } as octant.CardView,
-                },
-              ],
-            ],
-          },
-          metadata: {
-            type: 'flexlayout',
-          },
-        } as octant.FlexLayoutView,
-      },
-    };
-  }
-
   navigationHandler(): octant.Navigation {
     let nav = new c.Navigation(
       'Cluster API',
@@ -147,76 +100,6 @@ export default class MyPlugin implements octant.Plugin {
   contentHandler(request: octant.ContentRequest): octant.ContentResponse {
     let namespace = this.currentNamespace.getValue();
     return this.router.route(request, namespace);
-
-    // let contentPath = request.contentPath;
-    // let title = [c.createText('octant-clusterapi-plugin')];
-    // if (contentPath.length > 0) {
-    //   title.push(c.createText(contentPath));
-    // }
-    //
-    // let namespace = '<unknown>';
-    // this.currentNamespace.subscribe(data => {
-    //   namespace = data;
-    // });
-    //
-    // return {
-    //   content: {
-    //     title: title,
-    //     viewComponents: [
-    //       {
-    //         metadata: {
-    //           type: 'card',
-    //           accessor: 'card-1',
-    //           title: [c.createText('Card 1')],
-    //         },
-    //         config: {
-    //           body: c.createText(
-    //             'card body 1\n' +
-    //               contentPath +
-    //               '\n' +
-    //               ' **actionCallCount:** ' +
-    //               this.actionCount +
-    //               '\n' +
-    //               'currentNamespace: ' +
-    //               namespace +
-    //               '\n',
-    //             true
-    //           ),
-    //         },
-    //       } as octant.CardView,
-    //       {
-    //         metadata: {
-    //           type: 'card',
-    //           accessor: 'card-2',
-    //           title: [c.createText('Card 2')],
-    //         },
-    //         config: {
-    //           body: c.createText('card body 2' + contentPath),
-    //         },
-    //       } as octant.CardView,
-    //     ],
-    //     buttonGroup: {
-    //       config: {
-    //         buttons: [
-    //           {
-    //             name: 'Test',
-    //             payload: {
-    //               action: 'octant-clusterapi-plugin/testAction',
-    //               foo: 'bar',
-    //             },
-    //             confirmation: {
-    //               title: 'Confirmation?',
-    //               body: 'Confirm this button click',
-    //             },
-    //           },
-    //         ],
-    //       },
-    //       metadata: {
-    //         type: 'buttonGroup',
-    //       },
-    //     } as octant.ButtonGroupView,
-    //   },
-    // };
   }
 }
 

@@ -1,10 +1,13 @@
-import { TextFactory } from '../components/textFactory';
 import * as octant from '../octant/plugin';
 import { ContentPage } from './page';
 import { createContentResponse } from '../components/content';
 import { createColumn, TableFactory } from '../components/table';
+import { TextFactory } from '../octant-components/text';
+import { DashboardClient } from '../octant/plugin';
 
 export class OverviewPage implements ContentPage {
+  constructor(private dashboardClient: DashboardClient) {}
+
   paths = ['/', '/overview'];
 
   content(
@@ -17,18 +20,18 @@ export class OverviewPage implements ContentPage {
       namespace: namespace,
     };
 
-    const objects = req.client.List(key);
+    const objects = this.dashboardClient.List(key);
 
     const rows = objects.map(object => {
       return {
-        Name: new TextFactory(object.metadata.name).toComponent(),
-        Phase: new TextFactory(object.status.phase).toComponent(),
-        'Control Plane Initialized': new TextFactory(
-          String(object.status.controlPlaneInitialized)
-        ).toComponent(),
-        'Infrastructure Ready': new TextFactory(
-          String(object.status.infrastructureReady)
-        ).toComponent(),
+        Name: new TextFactory({ value: object.metadata.name }).toComponent(),
+        Phase: new TextFactory({ value: object.status.phase }).toComponent(),
+        'Control Plane Initialized': new TextFactory({
+          value: String(object.status.controlPlaneInitialized),
+        }).toComponent(),
+        'Infrastructure Ready': new TextFactory({
+          value: String(object.status.infrastructureReady),
+        }).toComponent(),
       };
     });
 
@@ -40,13 +43,13 @@ export class OverviewPage implements ContentPage {
     ].map(name => createColumn(name));
 
     const table = new TableFactory(
-      [new TextFactory('Clusters')],
+      [new TextFactory({ value: 'Clusters' })],
       columns,
       rows
     );
 
     return createContentResponse(
-      [new TextFactory('ClusterAPI Overview')],
+      [new TextFactory({ value: 'ClusterAPI Overview' })],
       [table]
     );
   }

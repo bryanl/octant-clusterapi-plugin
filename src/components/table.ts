@@ -1,6 +1,5 @@
 import { ComponentFactory } from './factory';
 import { Component } from './component';
-import { TextFactory } from './textFactory';
 
 export interface TableColumn {
   name: string;

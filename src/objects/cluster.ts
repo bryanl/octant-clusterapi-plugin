@@ -1,13 +1,12 @@
 import { ObjectRequest, Printer } from './objects';
-import { TextFactory } from '../components/textFactory';
-import { Card, CardFactory } from '../components/card';
 import { Item, PrintResponse } from '../components/print-response';
 import * as c from '../octant/components';
-import { ComponentFactory } from '../components/factory';
-import { Link, LinkFactory } from '../components/link';
-import { SummarySection } from '../components/summary-section';
+import { TextFactory } from '../octant-components/text';
+import { CardConfig, CardFactory } from '../octant-components/card';
+import { Component } from '../octant-components/component';
+import { LinkConfig, LinkFactory } from '../octant-components/link';
 
-type printItemFn = (clusterObject: ClusterObject) => ComponentFactory<any>;
+type printItemFn = (clusterObject: ClusterObject) => Component<any>;
 
 interface Ref {
   apiVersion: string;
@@ -36,6 +35,7 @@ export class Cluster implements Printer {
   constructor(private req: ObjectRequest) {}
 
   print(req: ObjectRequest): PrintResponse {
+    console.log('!!!!print cluster');
     const resp = new PrintResponse();
 
     const clusterObject = JSON.parse(
@@ -47,18 +47,14 @@ export class Cluster implements Printer {
       printControlPlaneEndpoint,
     ];
 
-    resp.addConfig(
-      new SummarySection(
-        `Control Plane (${clusterObject.spec.controlPlaneRef.kind})`,
-        genLink(clusterObject.spec.controlPlaneRef)
-      )
-    );
-    resp.addConfig(
-      new SummarySection(
-        `Infrastructure (${clusterObject.spec.infrastructureRef.kind})`,
-        genLink(clusterObject.spec.infrastructureRef)
-      )
-    );
+    resp.addConfig({
+      header: `Control Plane (${clusterObject.spec.controlPlaneRef.kind})`,
+      content: genLink(clusterObject.spec.controlPlaneRef),
+    });
+    resp.addConfig({
+      header: `Infrastructure (${clusterObject.spec.infrastructureRef.kind})`,
+      content: genLink(clusterObject.spec.infrastructureRef),
+    });
 
     resp.addItems(
       ...itemFns.map(itemFn => new Item(c.Width.Half, itemFn(clusterObject)))
@@ -70,41 +66,51 @@ export class Cluster implements Printer {
 
 const printClusterNetwork = (
   clusterObject: ClusterObject
-): ComponentFactory<Card> => {
-  const body = new TextFactory(
-    convertToJSON(clusterObject.spec.clusterNetwork),
-    {
-      isMarkdown: true,
-    }
-  );
-  return new CardFactory('Cluster Network', body.toComponent());
+): Component<CardConfig> => {
+  const body = new TextFactory({
+    value: convertToJSON(clusterObject.spec.clusterNetwork),
+    options: { isMarkdown: true },
+  });
+
+  return new CardFactory({
+    body: body.toComponent(),
+    factoryMetadata: {
+      title: [new TextFactory({ value: 'Cluster Network' }).toComponent()],
+    },
+  }).toComponent();
 };
 
 const printControlPlaneEndpoint = (
   clusterObject: ClusterObject
-): ComponentFactory<Card> => {
-  const body = new TextFactory(
-    convertToJSON(clusterObject.spec.controlPlaneEndpoint),
-    {
-      isMarkdown: true,
-    }
-  );
-  return new CardFactory('Control Plane Endpoint', body.toComponent());
+): Component<CardConfig> => {
+  const body = new TextFactory({
+    value: convertToJSON(clusterObject.spec.controlPlaneEndpoint),
+    options: { isMarkdown: true },
+  });
+
+  return new CardFactory({
+    body: body.toComponent(),
+    factoryMetadata: {
+      title: [
+        new TextFactory({ value: 'Control Plane Endpoint' }).toComponent(),
+      ],
+    },
+  }).toComponent();
 };
 
 const convertToJSON = (object: any): string => {
   return '```json' + '\n' + JSON.stringify(object) + '\n' + '```';
 };
 
-const genLink = (ref: Ref): ComponentFactory<Link> => {
+const genLink = (ref: Ref): Component<LinkConfig> => {
   const kind = plurals[ref.kind];
   if (!kind) {
     throw `unable to find plural for ${ref.kind}`;
   }
 
-  const linkRef = `/overview/namespace/${ref.namespace}/custom-resources/${kind}.${ref.apiVersion}/${ref.name}`;
+  const linkRef = `/overview/namespace/${ref.namespace}/custom-resources/${kind}.${ref.apiVersion}/${ref.name}?`;
   console.log(linkRef);
-  return new LinkFactory(ref.name, linkRef);
+  return new LinkFactory({ value: ref.name, ref: linkRef }).toComponent();
 };
 
 const plurals: { [key: string]: string } = {

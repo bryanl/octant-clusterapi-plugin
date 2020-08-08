@@ -1,44 +1,39 @@
-import { ComponentFactory } from './factory';
 import * as octant from '../octant/plugin';
-import { FlexLayoutItem } from '../octant/plugin';
-import { SummarySection } from './summary-section';
+import { Component } from '../octant-components/component';
 
 export class PrintResponse {
-  private configSections: SummarySection[] = [];
-  private configStatuses: SummarySection[] = [];
+  private configSections: { header: string; content: Component<any> }[] = [];
+  private statusSections: { header: string; content: Component<any> }[] = [];
   private items: Item[] = [];
 
   addItems(...items: Item[]) {
     this.items = items;
   }
 
-  addConfig(summarySection: SummarySection) {
+  addConfig(summarySection: { header: string; content: Component<any> }) {
     this.configSections.push(summarySection);
   }
 
-  addigStatus(summarySection: SummarySection) {
-    this.configStatuses.push(summarySection);
+  addStatus(summarySection: { header: string; content: Component<any> }) {
+    this.statusSections.push(summarySection);
   }
 
   toObject(): octant.PrintResponse {
     return {
-      config: this.configSections.map(c => c.toObject()),
-      status: this.configStatuses.map(c => c.toObject()),
+      config: this.configSections,
+      status: this.statusSections,
       items: this.items.map(item => item.toObject()),
     };
   }
 }
 
 export class Item {
-  constructor(
-    private width: number,
-    private component: ComponentFactory<any>
-  ) {}
+  constructor(private width: number, private component: Component<any>) {}
 
-  toObject(): FlexLayoutItem {
+  toObject(): { width?: number; view: Component<any> } {
     return {
       width: this.width,
-      view: this.component.toComponent(),
+      view: this.component,
     };
   }
 }

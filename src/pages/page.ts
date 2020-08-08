@@ -1,5 +1,5 @@
 import * as octant from '../octant/plugin';
-import { TextFactory } from '../components/textFactory';
+import { TextFactory } from '../octant-components/text';
 
 export interface Page {
   content(
@@ -21,9 +21,11 @@ export class NotFoundPage implements Page {
   ): octant.ContentResponse {
     return {
       content: {
-        title: [new TextFactory('not found').toComponent()],
+        title: [new TextFactory({ value: 'not found' }).toComponent()],
         viewComponents: [
-          new TextFactory(`Unable to find page ${this.path}`).toComponent(),
+          new TextFactory({
+            value: `Unable to find page ${this.path}`,
+          }).toComponent(),
         ],
       },
     };
