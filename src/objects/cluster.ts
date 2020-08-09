@@ -1,3 +1,4 @@
+import * as octant from '../octant/plugin';
 import { ObjectRequest, Printer } from './objects';
 import { Item, PrintResponse } from '../components/print-response';
 import * as c from '../octant/components';
@@ -5,6 +6,7 @@ import { TextFactory } from '../octant-components/text';
 import { CardConfig, CardFactory } from '../octant-components/card';
 import { Component } from '../octant-components/component';
 import { LinkConfig, LinkFactory } from '../octant-components/link';
+import { DashboardClient } from '../octant/plugin';
 
 type printItemFn = (clusterObject: ClusterObject) => Component<any>;
 
@@ -32,10 +34,12 @@ interface ClusterObject {
 }
 
 export class Cluster implements Printer {
-  constructor(private req: ObjectRequest) {}
+  constructor() {}
 
-  print(req: ObjectRequest): PrintResponse {
-    console.log('!!!!print cluster');
+  print(
+    dashboardClient: octant.DashboardClient,
+    req: ObjectRequest
+  ): PrintResponse {
     const resp = new PrintResponse();
 
     const clusterObject = JSON.parse(
@@ -49,11 +53,11 @@ export class Cluster implements Printer {
 
     resp.addConfig({
       header: `Control Plane (${clusterObject.spec.controlPlaneRef.kind})`,
-      content: genLink(clusterObject.spec.controlPlaneRef),
+      content: genLink(clusterObject.spec.controlPlaneRef, dashboardClient),
     });
     resp.addConfig({
       header: `Infrastructure (${clusterObject.spec.infrastructureRef.kind})`,
-      content: genLink(clusterObject.spec.infrastructureRef),
+      content: genLink(clusterObject.spec.infrastructureRef, dashboardClient),
     });
 
     resp.addItems(
@@ -102,18 +106,7 @@ const convertToJSON = (object: any): string => {
   return '```json' + '\n' + JSON.stringify(object) + '\n' + '```';
 };
 
-const genLink = (ref: Ref): Component<LinkConfig> => {
-  const kind = plurals[ref.kind];
-  if (!kind) {
-    throw `unable to find plural for ${ref.kind}`;
-  }
-
-  const linkRef = `/overview/namespace/${ref.namespace}/custom-resources/${kind}.${ref.apiVersion}/${ref.name}?`;
-  console.log(linkRef);
-  return new LinkFactory({ value: ref.name, ref: linkRef }).toComponent();
-};
-
-const plurals: { [key: string]: string } = {
-  KubeadmControlPlane: 'kubeadmcontrolplanes',
-  VSphereCluster: 'vsphereclusters',
+const genLink = (ref: Ref, client: DashboardClient): Component<LinkConfig> => {
+  const path = client.RefPath(ref);
+  return new LinkFactory({ value: ref.name, ref: path }).toComponent();
 };

@@ -8,11 +8,11 @@ export interface KubernetesObject {
 }
 
 export interface Printer {
-  print(req: ObjectRequest): PrintResponse;
+  print(dashboardClient: DashboardClient, req: ObjectRequest): PrintResponse;
 }
 
 class EmptyPrinter implements Printer {
-  print(req: ObjectRequest): PrintResponse {
+  print(dashboardClient: DashboardClient, req: ObjectRequest): PrintResponse {
     return new PrintResponse();
   }
 }
@@ -25,13 +25,12 @@ export interface ObjectRequest {
 export class ObjectPrinter {
   constructor(private req: any) {}
 
-  print(): PrintResponse {
+  print(dashboardClient: DashboardClient): PrintResponse {
     const printer = this.findPrinter();
-    return printer.print(this.req);
+    return printer.print(dashboardClient, this.req);
   }
 
   private findPrinter() {
-    console.log('finding a printer');
     const objectRequest = JSON.parse(JSON.stringify(this.req)) as ObjectRequest;
     const object = objectRequest.object;
 
@@ -39,10 +38,9 @@ export class ObjectPrinter {
       object.apiVersion === 'cluster.x-k8s.io/v1alpha3' &&
       object.kind === 'Cluster'
     ) {
-      return new Cluster(this.req);
+      return new Cluster();
     }
 
-    console.log('unable to find a printer');
     return new EmptyPrinter();
   }
 }

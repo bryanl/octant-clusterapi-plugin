@@ -52,6 +52,7 @@ export interface DashboardClient {
   Create(namespace: string, yaml: string): string;
   Update(namespace: string, yaml: string): string;
   Delete(key: Key): string;
+  RefPath(object: any): string;
 }
 
 export interface HTTPClient {
@@ -136,7 +137,7 @@ export interface View {
 }
 
 export interface TitleMetadata {
-  type: "text" | "link";
+  type: 'text' | 'link';
   title?: TitleView[];
   accessor?: string;
 }

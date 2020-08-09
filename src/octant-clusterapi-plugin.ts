@@ -26,6 +26,7 @@ const versions: GroupVersionKind[] = [
   },
 ];
 
+// TODO: is export default what is needed here?
 export default class MyPlugin implements octant.Plugin {
   // Static fields that Octant uses
   name = 'octant-clusterapi-plugin';
@@ -67,9 +68,8 @@ export default class MyPlugin implements octant.Plugin {
   }
 
   printHandler(request: octant.ObjectRequest): octant.PrintResponse {
-    console.log('in printer handler');
     const printer = new ObjectPrinter(request);
-    const resp = printer.print();
+    const resp = printer.print(this.dashboardClient);
     return resp.toObject();
   }
 
