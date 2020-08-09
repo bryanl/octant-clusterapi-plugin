@@ -79,7 +79,7 @@ export class CardFactory implements ComponentFactory<CardConfig> {
     return {
       metadata: {
         type: 'card',
-        ...(this.factoryMetadata && { metadata: this.factoryMetadata }),
+        ...(this.factoryMetadata && this.factoryMetadata),
       },
       config: {
         body: this.body,
