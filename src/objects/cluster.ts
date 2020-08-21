@@ -5,17 +5,9 @@ import * as c from '../octant/components';
 import { TextFactory } from '../octant-components/text';
 import { CardConfig, CardFactory } from '../octant-components/card';
 import { Component } from '../octant-components/component';
-import { LinkConfig, LinkFactory } from '../octant-components/link';
-import { DashboardClient } from '../octant/plugin';
+import { genLink, Ref } from '../octant-components/api-extra';
 
 type printItemFn = (clusterObject: ClusterObject) => Component<any>;
-
-interface Ref {
-  apiVersion: string;
-  kind: string;
-  name: string;
-  namespace: string;
-}
 
 interface ClusterObject {
   spec: {
@@ -104,9 +96,4 @@ const printControlPlaneEndpoint = (
 
 const convertToJSON = (object: any): string => {
   return '```json' + '\n' + JSON.stringify(object) + '\n' + '```';
-};
-
-const genLink = (ref: Ref, client: DashboardClient): Component<LinkConfig> => {
-  const path = client.RefPath(ref);
-  return new LinkFactory({ value: ref.name, ref: path }).toComponent();
 };

@@ -4,6 +4,8 @@ import { createContentResponse } from '../components/content';
 import { createColumn, TableFactory } from '../components/table';
 import { TextFactory } from '../octant-components/text';
 import { DashboardClient } from '../octant/plugin';
+import { LinkFactory } from '../octant-components/link';
+import { genLinkFromObject } from '../octant-components/api-extra';
 
 export class OverviewPage implements ContentPage {
   constructor(private dashboardClient: DashboardClient) {}
@@ -23,8 +25,10 @@ export class OverviewPage implements ContentPage {
     const objects = this.dashboardClient.List(key);
 
     const rows = objects.map(object => {
+      const link = genLinkFromObject(object, this.dashboardClient);
+
       return {
-        Name: new TextFactory({ value: object.metadata.name }).toComponent(),
+        Name: link,
         Phase: new TextFactory({ value: object.status.phase }).toComponent(),
         'Control Plane Initialized': new TextFactory({
           value: String(object.status.controlPlaneInitialized),

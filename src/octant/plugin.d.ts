@@ -49,9 +49,14 @@ export interface ActionResponse {
 export interface DashboardClient {
   Get(key: Key): any;
   List(key: Key): any[];
-  Create(namespace: string, yaml: string): string;
   Update(namespace: string, yaml: string): string;
-  Delete(key: Key): string;
+
+  /**
+   * Delete deletes a an object identified by the key.
+   * @param key The key of the object to be deleted
+   * @throws Will throw an exception if the key is invalid or the delete fails.
+   */
+  Delete(key: Key): never;
   RefPath(object: any): string;
 }
 
