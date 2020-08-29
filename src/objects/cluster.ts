@@ -10,8 +10,9 @@ import {
   genLinkFromObject,
   Ref,
 } from '../octant-components/api-extra';
-import { createColumn, TableFactory } from '../components/table';
+import { createColumn } from '../components/table';
 import { TimestampFactory } from '../octant-components/timestamp';
+import { TableFactory } from '../octant-components/table';
 
 type printItemFn = (
   clusterObject: ClusterObject,
@@ -196,13 +197,10 @@ interface MatchExpression {
   values?: string[];
 }
 
-const machineTable: (
+const machineTable = (
   machines: any[],
   dashboardClient: octant.DashboardClient
-) => TableFactory = (
-  machines: any[],
-  dashboardClient: octant.DashboardClient
-) => {
+): TableFactory => {
   const rows = machines
     .sort((a, b) => (a.metadata.name <= b.metadata.name ? -1 : 1))
     .map(object => {
@@ -221,7 +219,13 @@ const machineTable: (
 
   const columns = ['Name', 'Phase', 'Age'].map(name => createColumn(name));
 
-  return new TableFactory([], columns, rows);
+  return new TableFactory({
+    columns,
+    rows,
+    emptyContent: '',
+    filters: {},
+    loading: false,
+  });
 };
 
 const listMachines = (
