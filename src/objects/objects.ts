@@ -5,6 +5,7 @@ import { Cluster } from './cluster';
 export interface KubernetesObject {
   apiVersion: string;
   kind: string;
+  metadata: any;
 }
 
 export interface Printer {

@@ -4,6 +4,7 @@ export interface Key {
   kind: string;
   name?: string;
   selector?: object;
+  labelSelector?: object;
 }
 
 export interface ObjectRequest {

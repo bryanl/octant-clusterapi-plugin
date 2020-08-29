@@ -1,10 +1,9 @@
 import * as octant from '../octant/plugin';
+import { DashboardClient } from '../octant/plugin';
 import { ContentPage } from './page';
 import { createContentResponse } from '../components/content';
 import { createColumn, TableFactory } from '../components/table';
 import { TextFactory } from '../octant-components/text';
-import { DashboardClient } from '../octant/plugin';
-import { LinkFactory } from '../octant-components/link';
 import { genLinkFromObject } from '../octant-components/api-extra';
 
 export class OverviewPage implements ContentPage {
@@ -24,20 +23,22 @@ export class OverviewPage implements ContentPage {
 
     const objects = this.dashboardClient.List(key);
 
-    const rows = objects.map(object => {
-      const link = genLinkFromObject(object, this.dashboardClient);
+    const rows = objects
+      .sort((a, b) => (a.metadata.name <= b.metadata.name ? -1 : 1))
+      .map(object => {
+        const link = genLinkFromObject(object, this.dashboardClient);
 
-      return {
-        Name: link,
-        Phase: new TextFactory({ value: object.status.phase }).toComponent(),
-        'Control Plane Initialized': new TextFactory({
-          value: String(object.status.controlPlaneInitialized),
-        }).toComponent(),
-        'Infrastructure Ready': new TextFactory({
-          value: String(object.status.infrastructureReady),
-        }).toComponent(),
-      };
-    });
+        return {
+          Name: link,
+          Phase: new TextFactory({ value: object.status.phase }).toComponent(),
+          'Control Plane Initialized': new TextFactory({
+            value: String(object.status.controlPlaneInitialized),
+          }).toComponent(),
+          'Infrastructure Ready': new TextFactory({
+            value: String(object.status.infrastructureReady),
+          }).toComponent(),
+        };
+      });
 
     const columns = [
       'Name',
